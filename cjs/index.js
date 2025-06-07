@@ -9,15 +9,17 @@ class Analytics4 {
     trackingID;
     secretKey;
     clientID;
+    userID;
     sessionID;
     customParams = {};
     userProperties = null;
     baseURL = 'https://google-analytics.com/mp';
     collectURL = '/collect';
-    constructor(trackingID, secretKey, clientID = (0, uuid_1.v4)(), sessionID = (0, uuid_1.v4)()) {
+    constructor(trackingID, secretKey, clientID = (0, uuid_1.v4)(), userID, sessionID = (0, uuid_1.v4)()) {
         this.trackingID = trackingID;
         this.secretKey = secretKey;
         this.clientID = clientID;
+        this.userID = userID;
         this.sessionID = sessionID;
     }
     set(key, value) {
@@ -50,6 +52,7 @@ class Analytics4 {
     event(eventName) {
         const payload = {
             client_id: this.clientID,
+            user_id: this?.userID,
             events: [
                 {
                     name: eventName,

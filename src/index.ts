@@ -5,6 +5,7 @@ class Analytics4 {
     private trackingID: string;
     private secretKey: string;
     private clientID: string;
+	private userID: string;
     private sessionID: string;
     private customParams: Record<string, unknown> = {};
     private userProperties: Record<string, unknown> | null = null;
@@ -12,10 +13,11 @@ class Analytics4 {
     private baseURL = 'https://google-analytics.com/mp';
     private collectURL = '/collect';
 
-    constructor(trackingID: string, secretKey: string, clientID: string = uuidv4(), sessionID = uuidv4()) {
+    constructor(trackingID: string, secretKey: string, clientID: string = uuidv4(), userID: string, sessionID = uuidv4()) {
         this.trackingID = trackingID;
         this.secretKey = secretKey;
         this.clientID = clientID;
+		this.userID = userID;
         this.sessionID = sessionID;
     }
 
@@ -52,6 +54,7 @@ class Analytics4 {
     event(eventName: string): Promise<any> {
         const payload = {
             client_id: this.clientID,
+			user_id: this?.userID,
             events: [
                 {
                     name: eventName,
