@@ -12,6 +12,6 @@ declare class Analytics4 {
     set(key: string, value: any): this;
     setParams(params?: Record<string, unknown>): this;
     setUserProperties(upValue?: Record<string, unknown>): this;
-    event(eventName: string): Promise<any>;
+    event(eventName: string): Promise<string>;
 }
 export default Analytics4;

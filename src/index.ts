@@ -1,5 +1,4 @@
 import {v4 as uuidv4} from 'uuid';
-import axios from 'axios';
 
 class Analytics4 {
     private trackingID: string;
@@ -51,7 +50,7 @@ class Analytics4 {
         return this;
     }
 
-    event(eventName: string): Promise<any> {
+    async event(eventName: string): Promise<string> {
         const payload = {
             client_id: this.clientID,
 			user_id: this?.userID,
@@ -65,17 +64,33 @@ class Analytics4 {
                 },
             ],
         };
-
-        if(this.userProperties) {
-            Object.assign(payload, {user_properties: this.userProperties})
+        if (this.userProperties) {
+            Object.assign(payload, { user_properties: this.userProperties });
         }
 
-        return axios
-            .post(
-                `${this.baseURL}${this.collectURL}?measurement_id=${this.trackingID}&api_secret=${this.secretKey}`,
-                payload,
-            )
-    };
+		const url = `${this.baseURL}${this.collectURL}?measurement_id=${this.trackingID}&api_secret=${this.secretKey}`;
+
+		try {
+			const response = await fetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(payload)
+			});
+
+			if (!response.ok) {
+				throw new Error(`HTTP error! Status: ${response.status}`);
+			}
+
+			return await response.text();
+		} catch (error) {
+			if (error instanceof Error) {
+                throw new Error(`Error sending GA event: ${error.message}`);
+            }
+            throw new Error('Unknown error sending GA event');
+		}
+    }
 }
 
 export default Analytics4;

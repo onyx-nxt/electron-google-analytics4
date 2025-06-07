@@ -1,10 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const uuid_1 = require("uuid");
-const axios_1 = __importDefault(require("axios"));
 class Analytics4 {
     trackingID;
     secretKey;
@@ -49,7 +45,7 @@ class Analytics4 {
         }
         return this;
     }
-    event(eventName) {
+    async event(eventName) {
         const payload = {
             client_id: this.clientID,
             user_id: this?.userID,
@@ -66,9 +62,26 @@ class Analytics4 {
         if (this.userProperties) {
             Object.assign(payload, { user_properties: this.userProperties });
         }
-        return axios_1.default
-            .post(`${this.baseURL}${this.collectURL}?measurement_id=${this.trackingID}&api_secret=${this.secretKey}`, payload);
+        const url = `${this.baseURL}${this.collectURL}?measurement_id=${this.trackingID}&api_secret=${this.secretKey}`;
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return await response.text();
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Error sending GA event: ${error.message}`);
+            }
+            throw new Error('Unknown error sending GA event');
+        }
     }
-    ;
 }
 exports.default = Analytics4;
