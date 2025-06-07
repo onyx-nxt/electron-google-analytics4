@@ -44,9 +44,11 @@ class Analytics4 {
         return this;
     }
     async event(eventName) {
+        const ip = (await (await fetch('https://checkip.amazonaws.com/').catch(() => undefined))?.text())?.trim();
         const payload = {
             client_id: this.clientID,
             user_id: this?.userID,
+            ip_override: ip,
             events: [
                 {
                     name: eventName,
