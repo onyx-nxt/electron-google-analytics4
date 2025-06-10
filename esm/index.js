@@ -4,17 +4,21 @@ class Analytics4 {
     secretKey;
     clientID;
     userID;
+    userIP;
     sessionID;
+    debug;
     customParams = {};
     userProperties = null;
     baseURL = 'https://google-analytics.com/mp';
     collectURL = '/collect';
-    constructor(trackingID, secretKey, clientID = uuidv4(), userID, sessionID = uuidv4()) {
+    constructor(trackingID, secretKey, clientID = uuidv4(), userID, userIP, sessionID = uuidv4(), debug) {
         this.trackingID = trackingID;
         this.secretKey = secretKey;
         this.clientID = clientID;
         this.userID = userID;
         this.sessionID = sessionID;
+        this.userIP = userIP;
+        this.debug = debug;
     }
     set(key, value) {
         if (value !== null) {
@@ -44,16 +48,16 @@ class Analytics4 {
         return this;
     }
     async event(eventName) {
-        const ip = (await (await fetch('https://checkip.amazonaws.com/').catch(() => undefined))?.text())?.trim();
         const payload = {
             client_id: this.clientID,
             user_id: this?.userID,
-            ip_override: ip,
+            ip_override: this?.userIP,
             events: [
                 {
                     name: eventName,
                     params: {
                         session_id: this.sessionID,
+                        debug_mode: this?.debug,
                         ...this.customParams,
                     },
                 },
@@ -62,6 +66,8 @@ class Analytics4 {
         if (this.userProperties) {
             Object.assign(payload, { user_properties: this.userProperties });
         }
+        // Ensure page_title persists across events
+        this.customParams = (({ page_title }) => ({ page_title }))(this.customParams);
         const url = `${this.baseURL}${this.collectURL}?measurement_id=${this.trackingID}&api_secret=${this.secretKey}`;
         try {
             const response = await fetch(url, {
